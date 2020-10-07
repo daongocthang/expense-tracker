@@ -1,5 +1,5 @@
 import argparse
-import datetime
+from datetime import datetime as dt
 import sys
 
 from decouple import config as conf
@@ -33,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', dest='amount', type=int)
     parser.add_argument('-c', dest='category', default='')
     parser.add_argument('-n', dest='notes', default='')
+    parser.add_argument('-d', dest='date', default=dt.now().strftime('%Y-%m-%d'))
 
     parser.add_argument('-l', dest='list', action='store_true')
 
@@ -51,8 +52,7 @@ if __name__ == '__main__':
 
     if not args.amount:
         sys.exit()
+    doc_id = dt.now().strftime('%Y%m%d%H%M%S')
+    trans = Transaction(doc_id, args.amount, args.category, args.notes, args.date)
 
-    now = datetime.datetime.now()
-    trans = Transaction(args.amount, args.category, args.notes, now.strftime('%Y-%m-%d %H:%M:%S'))
-
-    create(now.strftime('%Y%m%d%H%M%S'), trans)
+    create(doc_id, trans)
