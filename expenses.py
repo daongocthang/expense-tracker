@@ -28,21 +28,20 @@ def create(doc_id, trans: Transaction):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--new', action='store_true')
-    parser.add_argument('--update', action='store_true')
-    parser.add_argument('--list', action='store_true')
-    parser.add_argument('-a', dest='attrs', action=utils.StoreDictKeyPair, metavar="KEY1=VAL1,KEY2=VAL2...",
-                        required=False)
+    parser.add_argument('-U', dest='update', action='store_true')
+    parser.add_argument('-l', dest='list', action='store_true')
+
+    parser.add_argument('-a', dest='attrs', action=utils.StoreDictKeyPair, metavar="KEY1=VAL1,KEY2=VAL2...")
 
     args = parser.parse_args()
 
     if args.list:
         total = 0
-        print('{:<18}{:<15}{:<12}{:<15}{}'.format('Id', 'Date', 'Amount', 'Category', 'Notes'), end='\n')
+        print('{:<18}{:<15}{:<12}{:<18}{}'.format('Id', 'Date', 'Amount', 'Category', 'Notes'), end='\n')
 
         for doc in read_all():
             trans = Transaction.from_dict(doc.to_dict())
-            print('{:<18}{:<15}{:<12}{:<15}{}'.format(trans.doc_id, trans.date, trans.amount, trans.category,
+            print('{:<18}{:<15}{:<12}{:<18}{}'.format(trans.doc_id, trans.date, trans.amount, trans.category,
                                                       trans.notes))
             total += trans.amount
 
@@ -54,19 +53,6 @@ if __name__ == '__main__':
     for k, v in args.attrs.items():
         attrs[k] = v
 
-    if args.new:
-        now = dt.now()
-
-        doc_id = now.strftime('%Y%m%d%H%M%S')
-        amount = int(args.amount) if args.amount else 0
-        category = args.category if args.category else 'personal'
-        notes = args.notes if args.note else ''
-        date = args.date if args.date else now.strftime('%Y-%m-%d')
-
-        trans = Transaction(doc_id, args.amount, args.category, args.notes, args.date)
-
-        create(doc_id, trans)
-
     if args.update:
         if not attrs.get('doc_id'):
             print('[-] Not found any documentId')
@@ -77,3 +63,16 @@ if __name__ == '__main__':
             attrs['amount'] = val
 
         update(doc_id, attrs)
+
+    else:
+        now = dt.now()
+
+        doc_id = now.strftime('%Y%m%d%H%M%S')
+        amount = int(attrs['amount']) if attrs.get('amount') else 0
+        category = attrs['category'] if attrs.get('category') else 'personal'
+        notes = attrs['notes'] if attrs.get('notes') else ''
+        date = attrs['date'] if attrs.get('date') else now.strftime('%Y-%m-%d')
+
+        trans = Transaction(doc_id, amount, category, notes, date)
+
+        create(doc_id, trans)
